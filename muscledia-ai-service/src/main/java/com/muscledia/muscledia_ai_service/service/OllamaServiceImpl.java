@@ -4,6 +4,7 @@ package com.muscledia.muscledia_ai_service.service;
 import com.muscledia.muscledia_ai_service.exception.OllamaException.OllamaException;
 import com.muscledia.muscledia_ai_service.model.Answer;
 import com.muscledia.muscledia_ai_service.model.Question;
+import com.muscledia.muscledia_ai_service.util.AiPromptLoader;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -21,8 +22,12 @@ public class OllamaServiceImpl implements OllamaService {
                 .chatMemoryRepository(new InMemoryChatMemoryRepository())
                 .maxMessages(20)
                 .build();
+
+        String systemPrompt = AiPromptLoader.loadPrompt("assistant_role.txt");
+
         this.chatClient = builder
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .defaultSystem(systemPrompt)
                 .build();
     }
 
