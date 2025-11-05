@@ -17,5 +17,7 @@ public interface OllamaService {
      * @throws IllegalArgumentException if the question is null or invalid
      * @throws OllamaException custom exception if there is an error in communicating with the AI service
      */
-    Answer getAnswer(Question question);
+    Answer getGeneralAnswer(Question question);
+
+    Answer getStructureAnswer(Question question);
 }

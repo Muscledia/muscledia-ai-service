@@ -23,7 +23,7 @@ public class OllamaServiceImpl implements OllamaService {
                 .maxMessages(20)
                 .build();
 
-        String systemPrompt = AiPromptLoader.loadPrompt("assistant_role.txt");
+        String systemPrompt = AiPromptLoader.loadPrompt("assistant_role.txt");  //move this into getAnswer
 
         this.chatClient = builder
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
@@ -32,11 +32,32 @@ public class OllamaServiceImpl implements OllamaService {
     }
 
     @Override
-    public Answer getAnswer(Question question) {
+    public Answer getGeneralAnswer(Question question) {
         if (question == null || question.question().trim().isEmpty()) {
             throw new IllegalArgumentException("Question cannot be null");
         }
         try {
+            String response = this.chatClient.prompt()
+                    .user(question.question())
+                    .advisors()
+                    .call()
+                    .content();
+
+
+            return new Answer(response);
+        }
+        catch (RuntimeException e) {
+            throw new OllamaException(String.format("Error while calling Ollama API: %s", e.getMessage()), e);
+        }
+    }
+
+
+    @Override
+    public Answer getStructureAnswer(Question question) {
+        if (question == null || question.question().trim().isEmpty()) {
+            throw new IllegalArgumentException("Question cannot be null");
+        }
+        try {   // change .defaultSystem to return json with {"suggestedWorkoutRoutine": workoutroutine/plan name,"Description": what is it and how to perform it}
             String response = this.chatClient.prompt()
                     .user(question.question())
                     .advisors()

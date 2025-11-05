@@ -29,7 +29,21 @@ public class OllamaController {
     @Operation(summary = "Ask a question to Ollama model and get an answer")
     public ResponseEntity<Answer> getAnswer(@Valid @RequestBody Question question) {
         try {
-            Answer answer = ollamaService.getAnswer(question);
+            Answer answer = ollamaService.getGeneralAnswer(question);
+            return ResponseEntity.ok(answer);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to get response from Ollama", e);
+        }
+    }
+
+
+    @PostMapping("/structuredOutput")
+    @Operation(summary = "Ask a question to Ollama model and get an answer")
+    public ResponseEntity<Answer> getStructuredAnswer(@Valid @RequestBody Question question) {
+        try {
+            Answer answer = ollamaService.getGeneralAnswer(question);      //change
             return ResponseEntity.ok(answer);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
