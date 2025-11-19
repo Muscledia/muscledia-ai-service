@@ -1,8 +1,9 @@
 package com.muscledia.muscledia_ai_service.service;
 
-
 import com.muscledia.muscledia_ai_service.model.Answer;
 import com.muscledia.muscledia_ai_service.model.Question;
+import com.muscledia.muscledia_ai_service.model.WorkoutRecommendation;
+import com.muscledia.muscledia_ai_service.model.WorkoutRoutineRequest;
 import com.muscledia.muscledia_ai_service.exception.OllamaException.OllamaException;
 
 /**
@@ -19,5 +20,13 @@ public interface OllamaService {
      */
     Answer getGeneralAnswer(Question question);
 
-    Answer getStructureAnswer(Question question);
+    /**
+     * Generates a structured workout recommendation based on user data and preferences.
+     *
+     * @param request the workout routine request containing user data and preferences
+     * @return a WorkoutRecommendation object with the recommended routine
+     * @throws IllegalArgumentException if the request is null or invalid
+     * @throws OllamaException custom exception if there is an error in communicating with the AI service
+     */
+    WorkoutRecommendation getStructuredAnswer(WorkoutRoutineRequest request);
 }

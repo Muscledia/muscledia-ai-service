@@ -15,4 +15,13 @@ public class AiPromptLoader {
             throw new RuntimeException("Failed to load AI prompt: " + filename, e);
         }
     }
+
+    public static String loadJsonData(String filename) {
+        try {
+            ClassPathResource resource = new ClassPathResource("data/" + filename);
+            return Files.readString(resource.getFile().toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load JSON data: " + filename, e);
+        }
+    }
 }
