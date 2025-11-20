@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.validation.Valid;
-//import javax.validation.Valid;
+//import jakarta.validation.Valid;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/ollama")
@@ -28,7 +28,7 @@ public class OllamaController {
         this.ollamaService = ollamaService;
     }
 
-    @PostMapping("/ask")
+    @PostMapping("/postConversationWithModel")
     @Operation(summary = "Ask a question to Ollama model and get an answer")
     public ResponseEntity<Answer> getAnswer(@Valid @RequestBody Question question) {
         try {
@@ -42,7 +42,7 @@ public class OllamaController {
     }
 
 
-    @PostMapping("/structuredOutput")
+    @PostMapping("/getRecommendation")
     @Operation(summary = "Get structured workout recommendation based on user data and preferences")
     public ResponseEntity<WorkoutRecommendation> getStructuredAnswer(@Valid @RequestBody WorkoutRoutineRequest request) {
         try {
