@@ -1,10 +1,10 @@
 package com.muscledia.muscledia_ai_service.controller;
 
 
+import com.muscledia.muscledia_ai_service.dto.PreferencesDto;
 import com.muscledia.muscledia_ai_service.model.Answer;
 import com.muscledia.muscledia_ai_service.model.Question;
 import com.muscledia.muscledia_ai_service.model.WorkoutRecommendation;
-import com.muscledia.muscledia_ai_service.model.WorkoutRoutineRequest;
 import com.muscledia.muscledia_ai_service.service.OllamaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,9 +44,9 @@ public class OllamaController {
 
     @PostMapping("/getRecommendation")
     @Operation(summary = "Get structured workout recommendation based on user data and preferences")
-    public ResponseEntity<WorkoutRecommendation> getStructuredAnswer(@Valid @RequestBody WorkoutRoutineRequest request) {
+    public ResponseEntity<WorkoutRecommendation> getStructuredAnswer(@Valid @RequestBody PreferencesDto preferences) {
         try {
-            WorkoutRecommendation recommendation = ollamaService.getStructuredAnswer(request);
+            WorkoutRecommendation recommendation = ollamaService.getStructuredAnswer(preferences);
             return ResponseEntity.ok(recommendation);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);

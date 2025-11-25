@@ -1,4 +1,4 @@
-package com.muscledia.muscledia_ai_service.model;
+package com.muscledia.muscledia_ai_service.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -7,11 +7,11 @@ public record UserData(
     @NotNull String userId,
     @Positive double height,
     @Positive double weight,
-    @Positive int age,
+    @NotNull String goalType,
     @NotNull String gender,
-    @NotNull GoalType goalType
+    @Positive int age
 ) {
-    public static UserData of(String userId, double height, double weight, int age, String gender, GoalType goalType) {
+    public static UserData of(String userId, double height, double weight, String goalType, String gender, int age) {
         if (userId == null || userId.isBlank()) {
             throw new IllegalArgumentException("UserId cannot be null or blank");
         }
@@ -24,6 +24,6 @@ public record UserData(
         if (goalType == null) {
             throw new IllegalArgumentException("GoalType cannot be null");
         }
-        return new UserData(userId, height, weight, age, gender, goalType);
+        return new UserData(userId, height, weight, goalType, gender, age);
     }
 }

@@ -7,7 +7,6 @@ public record WorkoutRecommendation(
     @JsonProperty("routineId") String routineId,
     @JsonProperty("description") String description,
     @JsonProperty("difficultyLevel") String difficultyLevel,
-    @JsonProperty("equipmentType") String equipmentType,
     @JsonProperty("workoutSplit") String workoutSplit
 ) {
 }

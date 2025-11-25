@@ -1,13 +1,13 @@
 package com.muscledia.muscledia_ai_service.service;
 
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.muscledia.muscledia_ai_service.dto.PreferencesDto;
+import com.muscledia.muscledia_ai_service.dto.UserData;
 import com.muscledia.muscledia_ai_service.exception.OllamaException.OllamaException;
 import com.muscledia.muscledia_ai_service.model.Answer;
 import com.muscledia.muscledia_ai_service.model.Question;
 import com.muscledia.muscledia_ai_service.model.WorkoutRecommendation;
-import com.muscledia.muscledia_ai_service.model.WorkoutRoutineRequest;
 import com.muscledia.muscledia_ai_service.util.AiPromptLoader;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -16,10 +16,7 @@ import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 // import org.springframework.ai.model.function.FunctionCallback;
 // import org.springframework.ai.model.function.FunctionCallbackWrapper;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
-
-import java.util.function.Function;
 
 
 @Service
@@ -63,7 +60,6 @@ public class OllamaServiceImpl implements OllamaService {
                     .call()
                     .content();
 
-
             return new Answer(response);
         }
         catch (RuntimeException e) {
@@ -73,14 +69,17 @@ public class OllamaServiceImpl implements OllamaService {
 
 
     @Override
-    public WorkoutRecommendation getStructuredAnswer(WorkoutRoutineRequest request) {
-        if (request == null || request.userData() == null || request.preferences() == null) {
-            throw new IllegalArgumentException("Request, userData, and preferences cannot be null");
+    public WorkoutRecommendation getStructuredAnswer(PreferencesDto preferences) {
+        if (preferences == null) {
+            throw new IllegalArgumentException(" Preferences cannot be null");
         }
         try {
             // Load public routines JSON as context
             String publicRoutinesJson = AiPromptLoader.loadJsonData("public_routines.json");
-            
+
+            // call user-service and retrieve user information from jwt token
+            UserData userData = new UserData("6024845450355251", 182.3, 75.5, "BUILD_MUSCLE", "MALE", 23);
+
             // Build user context prompt
             String userContext = String.format("""
                 User Profile:
@@ -95,14 +94,14 @@ public class OllamaServiceImpl implements OllamaService {
                 - Frequency: %d times per week
                 - Training Level: %s
                 """,
-                request.userData().userId(),
-                request.userData().height(),
-                request.userData().weight(),
-                request.userData().age(),
-                request.userData().gender(),
-                request.userData().goalType(),
-                request.preferences().frequency(),
-                request.preferences().lvlOfTraining()
+                userData.userId(),
+                userData.height(),
+                userData.weight(),
+                userData.age(),
+                userData.gender(),
+                userData.goalType(),
+                preferences.frequency(),
+                preferences.lvlOfTraining()
             );
 
             // Create prompt with context
@@ -119,7 +118,6 @@ public class OllamaServiceImpl implements OllamaService {
                     "routineId": "routine id from the available routines",
                     "description": "brief description of why this routine is suitable and how to perform it",
                     "difficultyLevel": "difficulty level of the routine",
-                    "equipmentType": "equipment type required",
                     "workoutSplit": "workout split type"
                 }
                 """, userContext, publicRoutinesJson);
