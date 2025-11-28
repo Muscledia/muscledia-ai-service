@@ -1,0 +1,22 @@
+server:
+  port: 8084 # As defined in your Service Matrix
+
+spring:
+  application:
+    name: muscledia-ai-service
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3:8b
+          temperature: 0.5
+
+
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:81795ad725b2cadd49d27a60438415588db374020a561ae19cafebeef6339655304975b150867b21d3715e341a49271a75a7dde39776e156af0ddad50f5e6ec3}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+  issuer: ${JWT_ISSUER:muscledia-user-service}
+

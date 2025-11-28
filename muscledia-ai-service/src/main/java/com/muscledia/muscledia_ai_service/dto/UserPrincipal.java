@@ -15,7 +15,7 @@ import java.util.List;
 public class UserPrincipal implements UserDetails {
     private Long userId;
     private String username;
-    private List<? extends GrantedAuthority> authorities;
+    private List<? extends GrantedAuthority> authorities;   //private List<GrantedAuthority> authorities;  // Changed from List<? extends GrantedAuthority>
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

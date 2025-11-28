@@ -1,31 +1,39 @@
 package com.muscledia.muscledia_ai_service.security;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 @Component
 @Slf4j
-public class JwtAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
-    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
-        log.error("Unauthorized access attempt: {}", ex.getMessage());
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException
+    ) throws IOException, ServletException {
 
-        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        exchange.getResponse().getHeaders().add("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+        log.error("Unauthorized access attempt: {}", authException.getMessage());
 
-        String body = "{\"error\": \"Unauthorized\", \"message\": \"Invalid or missing authentication token\"}";
-        DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        return exchange.getResponse().writeWith(Mono.just(buffer));
+        String body = """
+            {
+                "error": "Unauthorized",
+                "message": "Invalid or missing authentication token"
+            }
+            """;
+
+        response.getWriter().write(body);
     }
 }

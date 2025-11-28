@@ -6,60 +6,53 @@ import com.muscledia.muscledia_ai_service.security.JwtAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationService {
 
-    public Mono<Long> getCurrentUserId() {
-        // This is where you would get the NullPointerException. We prevent it below.
-        return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication)
-                .cast(JwtAuthenticationToken.class)
-                .map(auth -> (UserPrincipal) auth.getPrincipal())
-                .map(UserPrincipal::getUserId)
-                .doOnNext(userId -> log.debug("Current user ID: {}", userId))
-                .switchIfEmpty(Mono.error(new UnauthorizedException("No authenticated user found")));
+    public Long getCurrentUserId() {
+        UserPrincipal principal = getCurrentUser();
+        log.debug("Current user ID: {}", principal.getUserId());
+        return principal.getUserId();
     }
 
-    public Mono<UserPrincipal> getCurrentUser() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication)
-                .cast(JwtAuthenticationToken.class)
-                .map(auth -> (UserPrincipal) auth.getPrincipal())
-                .doOnNext(user -> log.debug("Current user: {}", user))
-                .switchIfEmpty(Mono.error(new UnauthorizedException("No authenticated user found")));
+    public UserPrincipal getCurrentUser() {
+        JwtAuthenticationToken auth = getAuthentication();
+        UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+        log.debug("Current user: {}", principal);
+        return principal;
     }
 
-    public Mono<String> getCurrentUsername() {
-        return getCurrentUser().map(UserPrincipal::getUsername);
+    public String getCurrentUsername() {
+        return getCurrentUser().getUsername();
     }
 
-    public Mono<Boolean> hasRole(String role) {
-        return getCurrentUser()
-                .map(user -> user.hasRole(role))
-                .defaultIfEmpty(false);
+    public boolean hasRole(String role) {
+        return getCurrentUser().hasRole(role);
     }
 
-    public Mono<Boolean> isAdmin() {
+    public boolean isAdmin() {
         return hasRole("ADMIN");
     }
 
-    public Mono<Boolean> canAccessResource(Long resourceUserId) {
-        return getCurrentUser()
-                .map(user -> user.isAdmin() || user.getUserId().equals(resourceUserId))
-                .defaultIfEmpty(false);
+    public boolean canAccessResource(Long resourceUserId) {
+        UserPrincipal user = getCurrentUser();
+        return user.isAdmin() || user.getUserId().equals(resourceUserId);
     }
 
-    public Mono<Boolean> isCurrentUser(Long userId) {
-        return getCurrentUserId()
-                .map(currentUserId -> currentUserId.equals(userId))
-                .defaultIfEmpty(false);
+    public boolean isCurrentUser(Long userId) {
+        return getCurrentUserId().equals(userId);
     }
 
+    private JwtAuthenticationToken getAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof JwtAuthenticationToken jwtAuthenticationToken)) {
+            throw new UnauthorizedException("No authenticated user found");
+        }
+        return jwtAuthenticationToken;
+    }
 }
