@@ -12,7 +12,10 @@ spring:
           model: llama3:8b
           temperature: 0.5
 
-
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka # Point to Eureka Server
 
 # JWT Configuration
 jwt:
