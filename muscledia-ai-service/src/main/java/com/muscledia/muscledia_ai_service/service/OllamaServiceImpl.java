@@ -9,6 +9,9 @@ import com.muscledia.muscledia_ai_service.model.Answer;
 import com.muscledia.muscledia_ai_service.model.Question;
 import com.muscledia.muscledia_ai_service.model.WorkoutRecommendation;
 import com.muscledia.muscledia_ai_service.util.AiPromptLoader;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -19,12 +22,14 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.stereotype.Service;
 
 
+@Slf4j
 @Service
 public class OllamaServiceImpl implements OllamaService {
     private final ChatClient memoryChatClient;
     private final ChatClient statelessChatClient;
     private final ChatMemory chatMemory;
     private final ObjectMapper objectMapper;
+    protected static final Logger logger = LogManager.getLogger();
 
     public OllamaServiceImpl(ChatClient.Builder builder, ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -75,7 +80,10 @@ public class OllamaServiceImpl implements OllamaService {
         }
         try {
             // Load public routines JSON as context
+            logger.info("Creating public routines context");
             String publicRoutinesJson = AiPromptLoader.loadJsonData("public_routines.json");
+
+            logger.info("Finished creating public routines context ");
 
             // call user-service and retrieve user information from jwt token
             UserData userData = new UserData("6024845450355251", 182.3, 75.5, "BUILD_MUSCLE", "MALE", 23);
@@ -122,6 +130,8 @@ public class OllamaServiceImpl implements OllamaService {
                 }
                 """, userContext, publicRoutinesJson);
 
+
+            logger.info("Calling statelessChatClient with promptText: {} ", promptText);
             // Use structured output with Spring AI
             // Spring AI 1.0.3 supports structured output through ChatClient
             String response = this.statelessChatClient.prompt()
@@ -147,6 +157,7 @@ public class OllamaServiceImpl implements OllamaService {
                 cleanedResponse,
                 WorkoutRecommendation.class
             );
+            logger.info("Model has finished on the prompt");
 
             return recommendation;
         }
