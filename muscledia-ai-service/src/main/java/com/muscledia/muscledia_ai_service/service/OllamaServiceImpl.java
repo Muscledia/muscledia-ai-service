@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 public class OllamaServiceImpl implements OllamaService {
     private final ChatClient memoryChatClient;
     private final ChatClient statelessChatClient;
-    private final ChatMemory chatMemory;
+    //private final ChatMemory chatMemory;
     private final ObjectMapper objectMapper;
     private final PublicRoutinesFunction publicRoutinesFunction;
     protected static final Logger logger = LogManager.getLogger();
@@ -37,18 +37,18 @@ public class OllamaServiceImpl implements OllamaService {
             PublicRoutinesFunction publicRoutinesFunction) {
         this.objectMapper = objectMapper;
         this.publicRoutinesFunction = publicRoutinesFunction;
-        this.chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(new InMemoryChatMemoryRepository())
-                .maxMessages(20)
-                .build();
+//        this.chatMemory = MessageWindowChatMemory.builder()
+//                .chatMemoryRepository(new InMemoryChatMemoryRepository())
+//                .maxMessages(20)
+//                .build();
 
         String conversationSystemPrompt = AiPromptLoader.loadPrompt("assistant_role.txt");
 
         // Build memoryChatClient with only conversation system prompt - no structured output
         // This client is used for general conversations and should NOT return structured JSON
         this.memoryChatClient = builder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .defaultSystem(conversationSystemPrompt)
+                //.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                //.defaultSystem(conversationSystemPrompt)
                 .build();
 
         // Build statelessChatClient with structured output for workout recommendations
@@ -67,8 +67,10 @@ public class OllamaServiceImpl implements OllamaService {
             throw new IllegalArgumentException("Question cannot be null");
         }
         try {
+            String conversationSystemPrompt = AiPromptLoader.loadPrompt("assistant_role.txt");
             String response = this.memoryChatClient.prompt()
                     .user(question.question())
+                    .system(conversationSystemPrompt)
                     .advisors()
                     .call()
                     .content();
@@ -89,7 +91,7 @@ public class OllamaServiceImpl implements OllamaService {
         try {
             logger.info("Starting structured answer generation");
 
-            // call user-service and retrieve user information from jwt token
+            // call user-service and retrieve user information from jwt token!!!
             UserData userData = new UserData("6024845450355251", 182.3, 75.5, "BUILD_MUSCLE", "MALE", 23);
 
             // Build user context prompt
