@@ -24,9 +24,10 @@ public interface OllamaService {
      * Generates a structured workout recommendation based on user data and preferences.
      *
      * @param preferences the PreferencesDto request containing frequency preferences and workout experience
+     * @param jwtToken the JWT token for authenticating with user-service to retrieve user data
      * @return a WorkoutRecommendation object with the recommended routine
      * @throws IllegalArgumentException if the request is null or invalid
      * @throws OllamaException custom exception if there is an error in communicating with the AI service
      */
-    WorkoutRecommendation getStructuredAnswer(PreferencesDto preferences);
+    WorkoutRecommendation getStructuredAnswer(PreferencesDto preferences, String jwtToken);
 }

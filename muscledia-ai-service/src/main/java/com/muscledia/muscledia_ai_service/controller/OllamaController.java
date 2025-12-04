@@ -7,7 +7,9 @@ import com.muscledia.muscledia_ai_service.model.Question;
 import com.muscledia.muscledia_ai_service.model.WorkoutRecommendation;
 import com.muscledia.muscledia_ai_service.service.OllamaService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,15 +47,42 @@ public class OllamaController {
 
 
     @PostMapping("/getRecommendation")
-    @Operation(summary = "Get structured workout recommendation based on user data and preferences")
-    public ResponseEntity<WorkoutRecommendation> getStructuredAnswer(@Valid @RequestBody PreferencesDto preferences) {
+    @Operation(
+            summary = "Get structured workout recommendation based on user data and preferences",
+            description = "Retrieves user data from user-service using JWT token and generates personalized workout recommendation"
+    )
+    @SecurityRequirement(name = "bearer-key")
+    public ResponseEntity<WorkoutRecommendation> getStructuredAnswer(
+            @Valid @RequestBody PreferencesDto preferences,
+            HttpServletRequest request) {
         try {
-            WorkoutRecommendation recommendation = ollamaService.getStructuredAnswer(preferences);
+            // Extract JWT token from Authorization header
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                log.warn("Missing or invalid Authorization header");
+                throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, 
+                        "Authorization header with Bearer token is required"
+                );
+            }
+            
+            // Extract token (remove "Bearer " prefix)
+            String jwtToken = authHeader.substring(7);
+            log.debug("Extracted JWT token for user data retrieval");
+            
+            WorkoutRecommendation recommendation = ollamaService.getStructuredAnswer(preferences, jwtToken);
             return ResponseEntity.ok(recommendation);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (ResponseStatusException e) {
+            throw e; // Re-throw ResponseStatusException as-is
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to get structured response from Ollama", e);
+            log.error("Error generating workout recommendation: {}", e.getMessage(), e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, 
+                    "Failed to get structured response: " + e.getMessage(), 
+                    e
+            );
         }
     }
 }

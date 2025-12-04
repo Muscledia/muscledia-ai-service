@@ -25,6 +25,9 @@ eureka:
     prefer-ip-address: true
     hostname: ai-service
 
+# User Service Configuration
+user-service:
+  url: http://user-service:8081
 
 # JWT Configuration
 jwt:

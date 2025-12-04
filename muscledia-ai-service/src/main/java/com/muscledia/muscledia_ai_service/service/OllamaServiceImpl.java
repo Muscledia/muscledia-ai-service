@@ -4,6 +4,7 @@ package com.muscledia.muscledia_ai_service.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.muscledia.muscledia_ai_service.dto.PreferencesDto;
 import com.muscledia.muscledia_ai_service.dto.UserData;
+import com.muscledia.muscledia_ai_service.dto.UserDataDTO;
 import com.muscledia.muscledia_ai_service.exception.OllamaException.OllamaException;
 import com.muscledia.muscledia_ai_service.function.PublicRoutinesFunction;
 import com.muscledia.muscledia_ai_service.model.Answer;
@@ -29,14 +30,17 @@ public class OllamaServiceImpl implements OllamaService {
     //private final ChatMemory chatMemory;
     private final ObjectMapper objectMapper;
     private final PublicRoutinesFunction publicRoutinesFunction;
+    private final UserServiceClient userServiceClient;
     protected static final Logger logger = LogManager.getLogger();
 
     public OllamaServiceImpl(
             ChatClient.Builder builder,
             ObjectMapper objectMapper,
-            PublicRoutinesFunction publicRoutinesFunction) {
+            PublicRoutinesFunction publicRoutinesFunction,
+            UserServiceClient userServiceClient) {
         this.objectMapper = objectMapper;
         this.publicRoutinesFunction = publicRoutinesFunction;
+        this.userServiceClient = userServiceClient;
 //        this.chatMemory = MessageWindowChatMemory.builder()
 //                .chatMemoryRepository(new InMemoryChatMemoryRepository())
 //                .maxMessages(20)
@@ -84,15 +88,32 @@ public class OllamaServiceImpl implements OllamaService {
 
 
     @Override
-    public WorkoutRecommendation getStructuredAnswer(PreferencesDto preferences) {
+    public WorkoutRecommendation getStructuredAnswer(PreferencesDto preferences, String jwtToken) {
         if (preferences == null) {
-            throw new IllegalArgumentException(" Preferences cannot be null");
+            throw new IllegalArgumentException("Preferences cannot be null");
+        }
+        if (jwtToken == null || jwtToken.trim().isEmpty()) {
+            throw new IllegalArgumentException("JWT token is required to retrieve user data");
         }
         try {
             logger.info("Starting structured answer generation");
 
-            // call user-service and retrieve user information from jwt token!!!
-            UserData userData = new UserData("6024845450355251", 182.3, 75.5, "BUILD_MUSCLE", "MALE", 23);
+            // Call user-service and retrieve user information from JWT token
+            logger.info("Fetching user data from user-service using JWT token");
+            UserDataDTO userDataDTO = userServiceClient.getUserData(jwtToken);
+            
+            // Convert UserDataDTO to UserData (userId is Long in DTO, String in UserData)
+            UserData userData = UserData.of(
+                    String.valueOf(userDataDTO.getUserId()),
+                    userDataDTO.getHeight() != null ? userDataDTO.getHeight() : 0.0,
+                    userDataDTO.getWeight() != null ? userDataDTO.getWeight() : 0.0,
+                    userDataDTO.getGoalType() != null ? userDataDTO.getGoalType() : "BUILD_MUSCLE",
+                    userDataDTO.getGender() != null ? userDataDTO.getGender() : "MALE",
+                    userDataDTO.getAge() != null ? userDataDTO.getAge() : 25
+            );
+            
+            logger.info("Retrieved user data for userId: {}, height: {}, weight: {}, goal: {}", 
+                    userData.userId(), userData.height(), userData.weight(), userData.goalType());
 
             // Build user context prompt
             String userContext = String.format("""
