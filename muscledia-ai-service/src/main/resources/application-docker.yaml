@@ -5,17 +5,22 @@ spring:
   application:
     name: muscledia-ai-service
   ai:
-    ollama:
-      base-url: http://localhost:11434
+    openai:
+      base-url: http://model-runner:12434/engines
+      api-key: ignored
       chat:
         options:
-          model: llama3:8b
+          model: ai/llama3.2:3B-Q4_K_M
           temperature: 0.5
+    model:
+      chat: openai
+      embedding:
+        enabled: false
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka # Point to Eureka Server
+      defaultZone: http://service-discovery:8761/eureka # Point to Eureka Server
   instance:
     prefer-ip-address: true
     hostname: ai-service
