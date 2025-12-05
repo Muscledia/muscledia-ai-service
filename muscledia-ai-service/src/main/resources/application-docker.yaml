@@ -6,7 +6,7 @@ spring:
     name: muscledia-ai-service
   ai:
     openai:
-      base-url: http://model-runner:12434/engines
+      base-url: http://host.docker.internal:12434/engines
       api-key: ignored
       chat:
         options:
