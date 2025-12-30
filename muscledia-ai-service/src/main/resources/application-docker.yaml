@@ -1,37 +1,44 @@
 server:
-  port: 8084 # As defined in your Service Matrix
+  port: ${SERVER_PORT:8084}
 
 spring:
   application:
     name: muscledia-ai-service
+
   ai:
-    openai:
-      base-url: http://host.docker.internal:12434/engines
-      api-key: ignored
+    ollama:
+      base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://ollama:11434}
       chat:
         options:
-          model: ai/llama3.2:3B-Q4_K_M
-          temperature: 0.5
-    model:
-      chat: openai
-      embedding:
-        enabled: false
+          model: ${SPRING_AI_OLLAMA_CHAT_OPTIONS_MODEL:llama3.2:1b}
+          temperature: ${SPRING_AI_OLLAMA_CHAT_OPTIONS_TEMPERATURE:0.1}  # Even lower for deterministic JSON
+          format: json  # Force JSON format
+      init:
+        pull-model-strategy: when_missing
 
 eureka:
   client:
     service-url:
-      defaultZone: http://service-discovery:8761/eureka # Point to Eureka Server
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://service-discovery:8761/eureka}
+    register-with-eureka: true
+    fetch-registry: true
   instance:
     prefer-ip-address: true
-    hostname: ai-service
+    instance-id: ${spring.application.name}:${random.value}
 
-# User Service Configuration
 user-service:
-  url: http://user-service:8081
+  url: ${USER_SERVICE_URL:http://user-service:8081}
 
-# JWT Configuration
 jwt:
   secret: ${JWT_SECRET:81795ad725b2cadd49d27a60438415588db374020a561ae19cafebeef6339655304975b150867b21d3715e341a49271a75a7dde39776e156af0ddad50f5e6ec3}
-  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+  expiration: ${JWT_EXPIRATION:86400000}
   issuer: ${JWT_ISSUER:muscledia-user-service}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

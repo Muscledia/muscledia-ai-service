@@ -1,34 +1,28 @@
 server:
-  port: 8084 # As defined in your Service Matrix
+  port: 8084
 
 spring:
   application:
     name: muscledia-ai-service
   ai:
-    openai:
-      base-url: http://localhost:12434/engines
-      api-key: ignored
+    ollama:
+      base-url: http://host.docker.internal:11434
       chat:
         options:
-          model: ai/llama3.2:3B-Q4_K_M
-          temperature: 0.5
-    model:
-      chat: openai
-      embedding:
-        enabled: false
+          # OPTIMIZED: Use smallest, fastest model
+          model: llama3.2:1B-Q4_0
+          temperature: 0.1
+          num-predict: 300
+          top-k: 10
+          top-p: 0.9
+      init:
+        pull-model-strategy: when_missing
+      timeout: 300s
 
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka # Point to Eureka Server
-
-# User Service Configuration
 user-service:
   url: http://localhost:8081
 
-# JWT Configuration
 jwt:
   secret: ${JWT_SECRET:81795ad725b2cadd49d27a60438415588db374020a561ae19cafebeef6339655304975b150867b21d3715e341a49271a75a7dde39776e156af0ddad50f5e6ec3}
-  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+  expiration: ${JWT_EXPIRATION:86400000}
   issuer: ${JWT_ISSUER:muscledia-user-service}
-
