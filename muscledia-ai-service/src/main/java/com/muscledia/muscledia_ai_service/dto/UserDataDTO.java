@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO matching the response from user-service /api/users/me/data endpoint
- * This matches the UserDataDTO structure from user-service
+ * DTO for receiving user data from external services
+ * Used only for data transfer - no business logic
  */
 @Data
 @Builder
@@ -23,4 +23,3 @@ public class UserDataDTO {
     private String gender;
     private Integer age;
 }
-

@@ -1,17 +1,22 @@
 package com.muscledia.muscledia_ai_service.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-
+/**
+ * Domain model for user data
+ * Immutable and validated via compact constructor
+ */
 public record UserData(
-    @NotNull String userId,
-    @Positive double height,
-    @Positive double weight,
-    @NotNull String goalType,
-    @NotNull String gender,
-    @Positive int age
+        String userId,
+        double height,
+        double weight,
+        String goalType,
+        String gender,
+        int age
 ) {
-    public static UserData of(String userId, double height, double weight, String goalType, String gender, int age) {
+    /**
+     * Compact constructor with validation
+     * Executed automatically when creating instances
+     */
+    public UserData {
         if (userId == null || userId.isBlank()) {
             throw new IllegalArgumentException("UserId cannot be null or blank");
         }
@@ -24,6 +29,5 @@ public record UserData(
         if (goalType == null) {
             throw new IllegalArgumentException("GoalType cannot be null");
         }
-        return new UserData(userId, height, weight, goalType, gender, age);
     }
 }
